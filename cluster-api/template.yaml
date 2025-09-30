@@ -1,0 +1,114 @@
+# RESUMO:
+# Cluster + DockerCluster → descrevem o cluster alvo e a infraestrutura Docker.
+# KubeadmControlPlane + DockerMachineTemplate → definem como nasce o control-plane.
+# MachineDeployment + KubeadmConfigTemplate + DockerMachineTemplate → definem como nascem os nós workers.
+
+# ============================================================
+# 1. Definição do cluster lógico
+# ============================================================
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: capi-docker-cluster
+spec:
+  clusterNetwork:                  # Define a rede de pods
+    pods:
+      cidrBlocks: ["192.168.0.0/16"]
+  infrastructureRef:               # Aponta para o recurso de infraestrutura
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: DockerCluster
+    name: capi-docker-cluster
+
+---
+# ============================================================
+# 2. Definição da infraestrutura
+# ============================================================
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerCluster
+metadata:
+  name: capi-docker-cluster
+
+---
+# ============================================================
+# 3. Definição do control-plane
+# ============================================================
+apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+kind: KubeadmControlPlane
+metadata:
+  name: capi-control-plane
+spec:
+  replicas: 1                # Número de nós de control-plane
+  version: v1.30.0           # Versão do Kubernetes do cluster alvo
+  infrastructureTemplate:    # Molde de máquina para o control-plane
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: DockerMachineTemplate
+    name: capi-control-plane-template
+  kubeadmConfigSpec:         # Configurações passadas ao kubeadm
+    clusterConfiguration:
+      apiServer: {}
+      controllerManager: {}
+      scheduler: {}
+    initConfiguration:
+      nodeRegistration:
+        kubeletExtraArgs:
+          cgroup-driver: cgroupfs
+
+---
+# Template de máquina Docker para os nós do control-plane
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerMachineTemplate
+metadata:
+  name: capi-control-plane-template
+spec:
+  template:
+    spec: {}
+
+---
+# ============================================================
+# 4. Definição dos workers
+# ============================================================
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: capi-worker-deployment
+spec:
+  replicas: 1                 # Número de nós worker
+  clusterName: capi-docker-cluster
+  selector:
+    matchLabels: {}
+  template:
+    spec:
+      version: v1.30.0
+      bootstrap:
+        configRef:            # Configuração de bootstrap para os workers
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: capi-worker-bootstrap
+      infrastructureRef:      # Template de máquina Docker para os workers
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: DockerMachineTemplate
+        name: capi-worker-template
+
+---
+# Configuração de bootstrap para workers (via kubeadm)
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: capi-worker-bootstrap
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          kubeletExtraArgs:
+            cgroup-driver: cgroupfs
+
+---
+# Template de máquina Docker para os workers
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: DockerMachineTemplate
+metadata:
+  name: capi-worker-template
+spec:
+  template:
+    spec: {}
