@@ -1,0 +1,22 @@
+apiVersion: cluster.x-k8s.io/v1beta1     # Esse tipo 'Cluster' é definido por um CRD (Custom Resource Definition)
+kind: Cluster                            # É um recurso customizado do Cluster API (tipo novo adicionado ao Kubernetes)
+metadata:
+  name: my-cluster                       # Nome único desse cluster gerenciado
+  namespace: default                     # Namespace onde todos os objetos relacionados ficarão
+
+spec:
+  clusterNetwork:                        # Parte da definição do "estado desejado" para a rede do cluster
+    pods:
+      cidrBlocks: ["192.168.0.0/16"]     # CIDR usado para endereçar os Pods
+    services:
+      cidrBlocks: ["10.96.0.0/12"]       # CIDR usado para serviços Kubernetes (ClusterIP, etc.)
+
+  controlPlaneRef:                       # Referência para o recurso que define o Control Plane (quem gerencia o cluster)
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+    kind: KubeadmControlPlane            # Esse tipo também é um CRD — observado pelo controller do KubeadmControlPlane
+    name: my-cluster-control-plane       # Nome do recurso do control plane (que você define em outro YAML)
+
+  infrastructureRef:                     # Referência para o recurso de infraestrutura onde o cluster será criado
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: AWSCluster                     # Recurso customizado observado pelo controller de 'infrastructure-aws'
+    name: my-cluster

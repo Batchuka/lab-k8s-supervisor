@@ -5,6 +5,9 @@
 
 # ============================================================
 # 1. Definição do cluster lógico
+# Aqui estamos definindo um recurso do tipo 'Cluster' que representa o cluster Kubernetes lógico que queremos criar. Sem ele, nada mais funciona.
+# Esse recurso 'Cluster' define o nome do cluster, a rede de pods, e referencia os recursos que definem o control-plane e a infraestrutura onde o
+# cluster será criado. Toda a definição do cluster (nós, control-plane, etc) está ligada a esse recurso 'Cluster' via o campo 'clusterName' em outros recursos.
 # ============================================================
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
@@ -22,6 +25,10 @@ spec:
 ---
 # ============================================================
 # 2. Definição da infraestrutura
+# Aqui estamos definindo um recurso do tipo 'DockerCluster' que representa a infraestrutura Docker onde o cluster lógico definido acima será criado.
+# A definição de cima só diz que queremos um cluster chamado 'capi-docker-cluster' e as especificações de rede. Mas não diz onde esse cluster vai existir.
+# Este recurso 'DockerCluster' diz que o cluster será criado dentro de containers Docker na máquina física onde o Cluster API está rodando. O controller
+# do provider-docker irá observar este recurso e criar os containers Docker necessários.
 # ============================================================
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
 kind: DockerCluster
@@ -31,6 +38,9 @@ metadata:
 ---
 # ============================================================
 # 3. Definição do control-plane
+# Aqui estamos definindo um recurso do tipo 'KubeadmControlPlane' que será do tipo (kind) 'KubeadmControlPlane', ou seja, um control-plane gerenciado via kubeadm.
+# Esse recurso define quantos nós de control-plane queremos, a versão do Kubernetes, o template de máquina Docker para os nós do control-plane, e as configurações
+# passadas ao kubeadm.
 # ============================================================
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: KubeadmControlPlane
