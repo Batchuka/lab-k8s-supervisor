@@ -1,17 +1,22 @@
 apiVersion: apps/v1
+
 kind: MachineDeployment
+
 metadata:
   name: example-machine-deployment
   namespace: default
+
 spec:
   replicas: 3
   selector:
     matchLabels:
       app: example-app
-  template:
+  
+  template: 
     metadata:
       labels:
         app: example-app
+    
     spec:
       providerSpec:
         value:
@@ -27,8 +32,10 @@ spec:
             id: subnet-0abcdef1234567890
           securityGroups:
             - name: example-security-group
-      osSpec:
+      
+      sSpec:
         linux:
           os: ubuntu
           version: 20.04
+      
       terminationGracePeriodSeconds: 30
