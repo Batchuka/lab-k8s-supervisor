@@ -53,7 +53,7 @@ Isso deve produzir a seguinte saída:
 Gerar o par de chaves que será usado para acesso SSH à instância EC2:
 
 ```bash
-ssh-keygen -t ed25519 -f .aws/ec2-keys/k8s-bootstrap-lab-key
+ssh-keygen -t ed25519 -f .aws/ec2-keys/k8s-bootstrap-lab-key.pem
 ```
 
 Isso cria dois arquivos:
@@ -86,3 +86,18 @@ Depois, acessar via SSH:
 ```bash
 ssh -i aws/ec2-keys/k8s-bootstrap-lab-key ubuntu@<IP_PUBLICO_EC2>
 ```
+
+## 3 — Configurar a instância EC2 para virar o "Bootstrap Cluster"
+
+`Bootstrap Cluster` é o nome dado ao cluster que tem a capacidade de criar outros clusters, isto é, ele serve para fazer o bootstrap de outros. Ele não serve para outras questões. Comumente, o que se faz é instalar uma versão reduzida do k8s só para instalar a camada do CAPI em cima. 
+
+Entre ma máquina:
+
+```bash
+cd cd .aws/ec2-keys/
+ssh -i "k8s-bootstrap-lab-key.pem" ubuntu@ec2-98-83-38-60.compute-1.amazonaws.com
+```
+
+> **NOTA.:** essa parte `ubuntu@ec2-98-83-38-60.compute-1.amazonaws.com` é dinâmica e atribuída pela AWS. É um hostname. 
+
+<img src="/docs/images/image1.png" alt="onde encontrar o ssh de conexão no EC2" width="300">

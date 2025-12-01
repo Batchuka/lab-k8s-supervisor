@@ -13,7 +13,7 @@ provider "aws" {
 
 resource "aws_key_pair" "bootstrap_key" {
   key_name   = "k8s-bootstrap-lab-key"
-  public_key = file("../../.aws/ec2-keys/k8s-bootstrap-lab-key.pub")
+  public_key = file("../../.aws/ec2-keys/k8s-bootstrap-lab-key.pem.pub")
 }
 
 resource "aws_security_group" "bootstrap_sg" {
