@@ -25,6 +25,7 @@ Ela diz ao AWS CLI e ao Terraform:   **“Use este arquivo aqui como origem das 
 > **NOTA:** Ela vale apenas no terminal e no diretório onde foi criada. Se você abrir outro terminal ou sequer trocar de diretório, ela perderá efeito.
 
 ```bash
+cd aws-k8s-lab-1/terraform
 export AWS_SHARED_CREDENTIALS_FILE="../../.aws/credentials"
 ```
 
@@ -66,9 +67,10 @@ Dentro da pasta do projeto Terraform (aws-k8s-lab-1/terraform):
 
 Inicializar o Terraform:
 ```bash
-cd aws-k8s-lab-1/terraform
 terraform init
 ```
+
+Não coloque nenhuma frase nem nada, só dê enter 'vazio' em tudo.
 
 Ver o plano:
 ```bash
