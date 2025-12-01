@@ -100,4 +100,4 @@ ssh -i "k8s-bootstrap-lab-key.pem" ubuntu@ec2-98-83-38-60.compute-1.amazonaws.co
 
 > **NOTA.:** essa parte `ubuntu@ec2-98-83-38-60.compute-1.amazonaws.com` é dinâmica e atribuída pela AWS. É um hostname. 
 
-<img src="/docs/images/image1.png" alt="onde encontrar o ssh de conexão no EC2" width="300">
+<p align="center"><img src="../docs/images/image1.png" width="500"><br><em>onde encontrar o SSH de conexão no EC2</em></p>
