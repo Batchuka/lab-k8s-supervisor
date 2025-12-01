@@ -1,1 +1,0 @@
-# Script de bootstrap para instâncias EC2

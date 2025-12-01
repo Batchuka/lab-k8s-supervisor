@@ -1,1 +1,11 @@
-ec2/keys
+# SSH keys
+*.pem
+*.pub
+.aws/ec2-keys/
+
+# Lixos e Coisas específicas do Terraform para um projeto
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+.terraform.tfstate.lock.info
+terraform.tfstate.backup
