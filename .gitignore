@@ -2,6 +2,9 @@
 *.pem
 *.pub
 .aws/ec2-keys/
+*Administrator_accessKeys*
+*credentials*
+
 
 # Lixos e Coisas específicas do Terraform para um projeto
 .terraform/
