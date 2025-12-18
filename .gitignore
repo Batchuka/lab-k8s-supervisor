@@ -1,7 +1,7 @@
 # SSH keys
 *.pem
 *.pub
-.aws/ec2-keys/
+.aws/ec2-keys
 *Administrator_accessKeys*
 *credentials*
 
@@ -12,3 +12,6 @@
 terraform.tfstate
 .terraform.tfstate.lock.info
 terraform.tfstate.backup
+
+# Arquivos temporários do editor
+*_deprecated*

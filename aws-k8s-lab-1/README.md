@@ -1,61 +1,25 @@
-# Passo a passo
+# Passo a passo para prática de provisionar k8s com CAPI na AWS
 
-> **NOTA.:** O `.gitignore` está ignorando muitos recursos que serão criados aqui. Assim, não estranhe se eles não aparecerem em seu repositório remoto.
+**OBJETIVO**: instanciar uma máquina EC2 na AWS e executar nela um cluster Kubernetes via kind, utilizado como management cluster para trabalhar com CRDs do Cluster API (CAPI).
 
-## 0 – Configuração das credenciais AWS
-
-Antes de usar o Terraform, o AWS CLI precisa saber qual credencial usar. Você deve manter um arquivo próprio contento as credenciais `accessKeys` em `.aws/credentials`. Elas podem ser geradas no console do IAM para o usuário em questão. Salve essas credenciais no padrão da :
-
-```ini
-[default]
-aws_access_key_id = SUA_KEY
-aws_secret_access_key = SUA_SECRET
-```
-
-Como esse arquivo não está no local padrão do AWS CLI, é obrigatório informar manualmente onde ele está. Isso é feito com a variável de ambiente: `AWS_SHARED_CREDENTIALS_FILE`. Essa variável é usada pelo AWS CLI e ao Terraform:   **“Use este arquivo aqui como origem das credenciais.”**
-
-> **NOTA:** Ela vale apenas no terminal e no diretório onde foi criada. Se você abrir outro terminal ou sequer trocar de diretório, ela perderá efeito.
-
-```bash
-cd aws-k8s-lab-1/terraform
-export AWS_SHARED_CREDENTIALS_FILE="../../.aws/credentials"
-```
-
-Verifique se o AWS CLI está lendo esse arquivo corretamente:
-
-```bash
-aws sts get-caller-identity
-```
-Isso deve produzir a seguinte saída:
-
-```json
-{
-    "UserId": "AROAZQ3DR3MJGLRDCXV2G:user2467982=Matheus_",
-    "Account": "654654429970",
-    "Arn": "arn:aws:sts::654654429970:assumed-role/voclabs/user2467982=Matheus_"
-}
-```
-
-> **ATENÇÃO**: confira o caminho assumido `/voclabs/`. Se você usa AWS CLI para outras contas, é bem fácil confundir o terminal e mandar o Terraform criar recursos no lugar errado.
-
-
+**FERRAMENTAS** : Para isso usaremos `terraform` para provisionar e configurar recursos rapidamente, `ssh-keygen` para gerar chaves *ssh*, `AWS CLI` para dar comandos à AWS e `OpenSSH` como cliente *ssh* para se conectar ao EC2.
 
 ## 1 – Criação da chave SSH local
 
-Gerar o par de chaves que será usado para acesso SSH à instância EC2:
+O `terraform` é um utilitário de linha de comando usado para configurar e provisionar recursos de forma declarativa. Entretanto, essa CLI não oferece suporte a download. Ou seja, é possível usá-lo para criar uma chave de acesso SSH para uma instância EC2, mas a ferramenta não a baixa automaticamente, o que torna o processo inútil nesse contexto.
+
+Então, vamos gerar o par de chaves localmente e exportá-lo para uso no EC2. Usando o utilitário `ssh-keygen`, normalmente disponível em sistemas Unix, geraremos as chaves que serão usadas para acesso SSH à instância EC2. Por favor, navegue até a raiz do projeto e dê o seguinte comando — obs.: não utilize nenhuma `passphrase`:
 
 ```bash
 ssh-keygen -t ed25519 -f .aws/ec2-keys/k8s-bootstrap-lab-key.pem
 ```
-
 Isso cria dois arquivos:
-
-- aws/ec2-keys/k8s-bootstrap-lab-key → chave privada (fica somente na máquina local)
-- aws/ec2-keys/k8s-bootstrap-lab-key.pub → chave pública (usada pelo Terraform para criar o key pair na AWS)
+- aws/ec2-keys/k8s-bootstrap-lab-key.pem        → chave privada (fica somente na máquina local)
+- aws/ec2-keys/k8s-bootstrap-lab-key.pem.pub    → chave pública (enviada à AWS para compor o Key Pair)
 
 ## 2 – Provisionar a instância EC2 com Terraform
 
-Dentro da pasta do projeto Terraform (aws-k8s-lab-1/terraform):
+Agora navegue até a pasta *aws-k8s-lab-1/terraform*. Nessa pasta, preciso que faça a [Configuração das credenciais AWS](./README.md#configuração-das-credenciais-aws).
 
 Inicializar o Terraform:
 ```bash

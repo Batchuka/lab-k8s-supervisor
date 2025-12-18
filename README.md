@@ -21,3 +21,5 @@ O AWS CLI é a ferramenta oficial para interagir com a AWS pelo terminal.
 Domínio: **gerenciamento e autenticação** → fornece as credenciais e perfis que o Terraform usará.
 
 ---
+
+> **NOTA.:** O `.gitignore` está ignorando muitos recursos que serão criados aqui. Assim, não estranhe se eles não aparecerem em seu repositório remoto.
