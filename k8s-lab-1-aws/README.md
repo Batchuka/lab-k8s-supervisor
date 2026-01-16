@@ -8,7 +8,7 @@
 
 O `terraform` é um utilitário de linha de comando usado para configurar e provisionar recursos de forma declarativa. Entretanto, essa CLI não oferece suporte a download. Ou seja, é possível usá-lo para criar uma chave de acesso SSH para uma instância EC2, mas a ferramenta não a baixa automaticamente, o que torna o processo inútil nesse contexto.
 
-Então, vamos gerar o par de chaves localmente e exportá-lo para uso no EC2. Usando o utilitário `ssh-keygen`, normalmente disponível em sistemas Unix, geraremos as chaves que serão usadas para acesso SSH à instância EC2. Por favor, navegue até a raiz do projeto e dê o seguinte comando — obs.: não utilize nenhuma `passphrase`:
+Então, vamos gerar o par de chaves localmente e exportá-lo para uso no EC2. Usando o utilitário `ssh-keygen`, normalmente disponível em sistemas Unix, geraremos as chaves que serão usadas para acesso SSH à instância EC2. Por favor, **navegue até a raiz do projeto** e dê o seguinte comando — obs.: não utilize nenhuma `passphrase`:
 
 ```bash
 ssh-keygen -t ed25519 -f .aws/ec2-keys/k8s-bootstrap-lab-key.pem
@@ -16,6 +16,8 @@ ssh-keygen -t ed25519 -f .aws/ec2-keys/k8s-bootstrap-lab-key.pem
 Isso cria dois arquivos:
 - aws/ec2-keys/k8s-bootstrap-lab-key.pem        → chave privada (fica somente na máquina local)
 - aws/ec2-keys/k8s-bootstrap-lab-key.pem.pub    → chave pública (enviada à AWS para compor o Key Pair)
+
+Não coloque nenhuma frase nem nada, só dê enter 'vazio' em tudo.
 
 ## 2 – Provisionar a instância EC2 com Terraform
 
@@ -25,8 +27,6 @@ Inicializar o Terraform:
 ```bash
 terraform init
 ```
-
-Não coloque nenhuma frase nem nada, só dê enter 'vazio' em tudo.
 
 Ver o plano:
 ```bash
@@ -47,16 +47,16 @@ ssh -i aws/ec2-keys/k8s-bootstrap-lab-key ubuntu@<IP_PUBLICO_EC2>
 
 `Bootstrap Cluster` é o nome dado ao cluster que tem a capacidade de criar outros clusters, isto é, ele serve para fazer o bootstrap de outros. Ele não serve para outras questões. Comumente, o que se faz é instalar uma versão reduzida do k8s só para instalar a camada do CAPI em cima. 
 
-Entre ma máquina:
+Para acessar a instância criada, você pode ir até `EC2 > Instances > **id_sua_instancia** > Connect to instance`. Verá um Exemplo de comando de conexão ssh, algo assim: `ssh -i "k8s-bootstrap-lab-key.pem" ubuntu@ec2-34-201-148-231.compute-1.amazonaws.com`. Você precisa navegar até a raiz do projeto e dar esses comandos:
 
 ```bash
-cd cd .aws/ec2-keys/
-ssh -i "k8s-bootstrap-lab-key.pem" ubuntu@ec2-98-83-38-60.compute-1.amazonaws.com
+cd .aws/ec2-keys/
+ssh -i "k8s-bootstrap-lab-key.pem" ubuntu@ec2-34-201-148-231.compute-1.amazonaws.com
 ```
 
-> **NOTA.:** essa parte `ubuntu@ec2-98-83-38-60.compute-1.amazonaws.com` é dinâmica e atribuída pela AWS. É um hostname. 
+> 🔎 **NOTA** : a parte *ubuntu@ec2-34-201-148-231.compute-1.amazonaws.com* é dinâmica e atribuída pela AWS, pois está vinculada ao IP público da instância. Ela muda quando a instância é **parada** e **iniciada** novamente (ou **recriada**).
 
-<p align="center"><img src="../docs/images/image1.png" width="500"><br><em>onde encontrar o SSH de conexão no EC2</em></p>
+<p align="center"><img src="../docs/images/image1.png" width="500"><br><em>Onde encontrar o SSH de conexão no EC2</em></p>
 
 Daí coisas triviais:
 

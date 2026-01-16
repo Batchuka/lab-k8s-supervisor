@@ -19,6 +19,14 @@ Você pode ver isso acessando com as credenciais de **root** e navegando até `B
 <p align="center"><img src="../docs/images/image3.png" width="500"><br><em>Demonstração de créditos na AWS</em></p>
 
 
+## Atributa as permissões ao seu usuário
+
+
+<p align="center"><img src="../docs/images/image4.png" width="500"><br><em>Grupo criado</em></p>
+
+
+<p align="center"><img src="../docs/images/image5.png" width="500"><br><em>Políticas atribuídas ao Grupo</em></p>
+
 ##  Configuração das credenciais AWS
 
 Antes de usar o Terraform, o AWS CLI precisa saber qual credencial usar. Se navegar até `IAM > Security credentials`, poderá criar o tipo de credencial **Access keys**, para o *use case* **Command Line Interface (CLI)**. Você deve manter um arquivo próprio contento as credenciais `accessKeys` neste projeto, assim: `.aws/credentials`. O padrão é:
@@ -34,7 +42,7 @@ Como esse arquivo não está no local padrão do AWS CLI, é obrigatório inform
 > **NOTA:** Ela vale apenas no terminal e no diretório onde foi criada. Se você abrir outro terminal ou sequer trocar de diretório, ela perderá efeito.
 
 ```bash
-cd aws-k8s-lab-1/terraform
+cd k8s-lab-1-aws/terraform
 export AWS_SHARED_CREDENTIALS_FILE="../../.aws/credentials"
 ```
 
@@ -53,4 +61,4 @@ Isso deve produzir a seguinte saída:
 }
 ```
 
-> **ATENÇÃO**: se você tem a prática de utilizar AWS CLI, avalie bem o retorno do sts para ter certeza de estar apontando para account correta. A depender das permissões que você tiver, a partir de agora criará diversos recursos na AWS.
+> ⚠️ **ATENÇÃO**: se você tem a prática de utilizar AWS CLI, avalie bem o retorno do sts para ter certeza de estar apontando para account correta. A depender das permissões que você tiver, a partir de agora criará diversos recursos na AWS.
