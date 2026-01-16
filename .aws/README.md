@@ -1,8 +1,27 @@
 # Sobre o uso da AWS para práticas
 
+## Free Tier
+
+- [Explore AWS services with AWS Free Tier](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/free-tier.html)
+- [Track your Free Tier usage for Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-free-tier-usage.html)
+
+
+## Qual conta estou usando?
+
+Eu criei uma conta no Console AWS com meu email pessoal e selecionei o plano gratuito na AWS. Você terá **$100.00** de crédito para usar que expiram depois de muito tempo. 
+
+<p align="center"><img src="../docs/images/image2.png" width="500"><br><em>Planos na hora de se cadastrar na AWS</em></p>
+
+Quando acessar pela primeira vez, será com a credencial de **root**, que não deve ser utilizada para nenhuma forma de implementação. Prossiga criando um usuário no serviço **IAM** e dê as permissões devidas a ele.
+
+Você pode ver isso acessando com as credenciais de **root** e navegando até `Billing and Cost Management > Credits`.
+
+<p align="center"><img src="../docs/images/image3.png" width="500"><br><em>Demonstração de créditos na AWS</em></p>
+
+
 ##  Configuração das credenciais AWS
 
-Antes de usar o Terraform, o AWS CLI precisa saber qual credencial usar. Você deve manter um arquivo próprio contento as credenciais `accessKeys` em `.aws/credentials`. Elas podem ser geradas no console do IAM para o usuário em questão. Salve essas credenciais no padrão da :
+Antes de usar o Terraform, o AWS CLI precisa saber qual credencial usar. Se navegar até `IAM > Security credentials`, poderá criar o tipo de credencial **Access keys**, para o *use case* **Command Line Interface (CLI)**. Você deve manter um arquivo próprio contento as credenciais `accessKeys` neste projeto, assim: `.aws/credentials`. O padrão é:
 
 ```ini
 [default]

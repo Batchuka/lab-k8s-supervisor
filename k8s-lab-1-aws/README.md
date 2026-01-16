@@ -19,7 +19,7 @@ Isso cria dois arquivos:
 
 ## 2 – Provisionar a instância EC2 com Terraform
 
-Agora navegue até a pasta *aws-k8s-lab-1/terraform*. Nessa pasta, preciso que faça a [Configuração das credenciais AWS](./README.md#configuração-das-credenciais-aws).
+Agora navegue até a pasta *k8s-lab-1-aws/terraform*. Nessa pasta, preciso que faça a [Configuração das credenciais AWS](../.aws/README.md#configuração-das-credenciais-aws).
 
 Inicializar o Terraform:
 ```bash
