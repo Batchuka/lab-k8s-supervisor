@@ -190,26 +190,43 @@ EC2 (t3.micro)
 
 ```
 
+Em um desenho mais visual ficaria assim:
+
+```mermaid
+graph TD
+    A[Seu Desktop] -->|SSH| B[EC2 t3.micro]
+
+    B --> C[Docker Daemon]
+    C --> D[Container KIND]
+    D --> E[Kubernetes Cluster]
+
+    E --> E1[Control Plane]
+    E --> E2[etcd]
+    E --> E3[Nodes Virtuais]
+```
+
+
 Agora, você vai adiconar mais uma camada de abstração de software em cima disso kkk ... é o tal do **Cluster API** e assim teremos a seguinte estrutura:
 
-```bash
-Seu Desktop
-   .
-   .
-   .   (conexão SSH)
-   .
-   .
-EC2 (t3.micro) # Os CLIs 'kubectl' e 'clusterctl' estão instalados AQUI.
-└── Docker (runtime)
-    └── Container KIND
-        └── Kubernetes (cluster bootstrap)
-            ├── control-plane
-            ├── etcd
-            ├── nodes (virtuais)
-            └── Cluster API (CAPI) # ← É o que vamos instalar.
-                ├── CRDs (Cluster, Machine, MachineSet, etc.)
-                └── Controllers (reconciliadores)
+
+
+```mermaid
+graph TD
+    A[Seu Desktop] -->|SSH| B[EC2 t3.micro]
+
+    B --> C[Docker Runtime]
+    C --> D[Container KIND]
+    D --> E[Kubernetes Management Cluster]
+
+    E --> E1[Control Plane]
+    E --> E2[etcd]
+    E --> E3[Nodes Virtuais]
+
+    E --> F[Cluster API CAPI]
+    F --> F1[CRDs Cluster Machine MachineSet]
+    F --> F2[Controllers de Reconciliacao]
 ```
+
 
 O que precisamos fazer agora é instalar o `clusterctl`. Ele é só um CLI que irá trocar uma ideia com o k8s dentro do container e pedir para instalar os CRD's do CAPI.
 
@@ -274,28 +291,6 @@ Com isso, você instalou uma cama extra em cima do CAPI. Você instalou o CAPA, 
 
 Na prática, seu EC2 agora é oficialmente um “orquestrador de clusters Kubernetes”.
 
-```bash
-Seu Desktop
-   .
-   .
-   .   (conexão SSH)
-   .
-   .
-EC2 (t3.micro) # Os CLIs 'kubectl' e 'clusterctl' estão instalados AQUI.
-└── Docker (runtime)
-    └── Container KIND
-        └── Kubernetes (cluster bootstrap / management cluster)
-            ├── control-plane
-            ├── etcd
-            ├── nodes (virtuais)
-            └── Cluster API (CAPI)
-                ├── CRDs (Cluster, Machine, MachineSet, etc.)
-                ├── Controllers (reconciliadores genéricos)
-                └── Infrastructure Provider: AWS (CAPA)
-                    ├── CRDs AWS (AWSCluster, AWSMachine, etc.)
-                    └── Controllers que chamam a API da AWS
-```
-
 
 ```mermaid
 graph TD
@@ -303,19 +298,19 @@ graph TD
 
     B --> C[Docker Runtime]
     C --> D[Container KIND]
-    D --> E[Kubernetes - Management / Bootstrap Cluster]
+    D --> E[Kubernetes Management Cluster]
 
     E --> E1[Control Plane]
     E --> E2[etcd]
     E --> E3[Nodes Virtuais]
 
-    E --> F[Cluster API - CAPI]
-    F --> F1[CRDs: Cluster, Machine, MachineSet]
-    F --> F2[Controllers de Reconciliação]
+    E --> F[Cluster API CAPI]
+    F --> F1[CRDs Cluster Machine MachineSet]
+    F --> F2[Controllers de Reconciliacao]
 
-    F --> G[Infrastructure Provider - CAPA (AWS)]
-    G --> G1[CRDs AWS: AWSCluster, AWSMachine]
-    G --> G2[Controllers AWS: EC2, ELB, etc]
+    F --> G[Infrastructure Provider CAPA AWS]
+    G --> G1[CRDs AWSCluster AWSMachine]
+    G --> G2[Controllers AWS EC2 ELB]
 ```
 
 ## 5 — Crie seu primeiro Workload
