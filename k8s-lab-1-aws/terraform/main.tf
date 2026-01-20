@@ -36,7 +36,7 @@ resource "aws_security_group" "bootstrap_sg" {
 
 resource "aws_instance" "bootstrap" {
   ami                         = "ami-0c398cb65a93047f2" # Ubuntu Server 22.04 LTS (HVM),EBS General Purpose (SSD) Volume Type. Support available from Canonical (http://www.ubuntu.com/cloud/services).
-  instance_type               = "t3.micro" # 2 vCPU, 1 GiB RAM
+  instance_type               = "t3.small" # 2 vCPU, 2 GiB RAM
   key_name                    = aws_key_pair.bootstrap_key.key_name
   vpc_security_group_ids      = [aws_security_group.bootstrap_sg.id]
   associate_public_ip_address = true
