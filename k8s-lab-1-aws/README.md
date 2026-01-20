@@ -298,28 +298,24 @@ EC2 (t3.micro) # Os CLIs 'kubectl' e 'clusterctl' estão instalados AQUI.
 
 
 ```mermaid
-raph TD
+graph TD
     A[Seu Desktop] -->|SSH| B[EC2 t3.micro]
 
     B --> C[Docker Runtime]
-
     C --> D[Container KIND]
-
-    D --> E[Kubernetes<br/>Management / Bootstrap Cluster]
+    D --> E[Kubernetes - Management / Bootstrap Cluster]
 
     E --> E1[Control Plane]
     E --> E2[etcd]
     E --> E3[Nodes Virtuais]
 
     E --> F[Cluster API - CAPI]
+    F --> F1[CRDs: Cluster, Machine, MachineSet]
+    F --> F2[Controllers de Reconciliação]
 
-    F --> F1[CRDs<br/>Cluster, Machine, MachineSet]
-    F --> F2[Controllers<br/>Reconciliação]
-
-    F --> G[Infrastructure Provider<br/>CAPA - AWS]
-
-    G --> G1[CRDs AWS<br/>AWSCluster, AWSMachine]
-    G --> G2[Controllers AWS<br/>Chamadas EC2, ELB, etc]
+    F --> G[Infrastructure Provider - CAPA (AWS)]
+    G --> G1[CRDs AWS: AWSCluster, AWSMachine]
+    G --> G2[Controllers AWS: EC2, ELB, etc]
 ```
 
 ## 5 — Crie seu primeiro Workload
