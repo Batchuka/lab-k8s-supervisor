@@ -38,11 +38,6 @@ Aplicar:
 terraform apply
 ```
 
-Depois, acessar via SSH:
-```bash
-ssh -i aws/ec2-keys/k8s-bootstrap-lab-key ubuntu@<IP_PUBLICO_EC2>
-```
-
 É importante, após as práticas, remover toda a infraestrutura criada para evitar custos desnecessários. Isso pode ser feito com o comando abaixo. Atenção: ele remove **todos** os recursos gerenciados pelo Terraform no diretório atual. Tudo o que foi criado a partir da seção 3 será apagado.
 
 ```bash
@@ -50,20 +45,20 @@ terraform destroy
 ```
 
 
-## 3 — Configurar a instância EC2 para virar o "Bootstrap Cluster"
+## 3 — Acessar e Configurar a instância EC2
 
-`Bootstrap Cluster` é o nome dado ao cluster que tem a capacidade de criar outros clusters, isto é, ele serve para fazer o bootstrap de outros. Ele não serve para outras questões. Comumente, o que se faz é instalar uma versão reduzida do k8s só para instalar a camada do CAPI em cima. 
+Para acessar a instância criada, você pode ir até `EC2 > Instances > **id_sua_instancia** > Connect to instance`. Verá um Exemplo de comando de conexão ssh, algo assim: `ssh -i "k8s-bootstrap-lab-key.pem" ubuntu@ec2-34-201-148-231.compute-1.amazonaws.com`. 
 
-Para acessar a instância criada, você pode ir até `EC2 > Instances > **id_sua_instancia** > Connect to instance`. Verá um Exemplo de comando de conexão ssh, algo assim: `ssh -i "k8s-bootstrap-lab-key.pem" ubuntu@ec2-34-201-148-231.compute-1.amazonaws.com`. Você precisa navegar até a raiz do projeto e dar esses comandos:
-
-```bash
-cd .aws/ec2-keys/
-ssh -i "k8s-bootstrap-lab-key.pem" ubuntu@ec2-34-201-148-231.compute-1.amazonaws.com
-```
+<p align="center"><img src="../docs/images/image1.png" width="500"><br><em>Onde encontrar o SSH de conexão no EC2</em></p>
 
 > 🔎 **NOTA** : a parte *ubuntu@ec2-34-201-148-231.compute-1.amazonaws.com* é dinâmica e atribuída pela AWS, pois está vinculada ao IP público da instância. Ela muda quando a instância é **parada** e **iniciada** novamente (ou **recriada**).
 
-<p align="center"><img src="../docs/images/image1.png" width="500"><br><em>Onde encontrar o SSH de conexão no EC2</em></p>
+Eu irei criar uma variável essa parte dinâmica, porque assim fica mais fácil para eu trabalhar.
+
+```bash
+export EC2_HOST=ubuntu@ec2-34-201-148-231.compute-1.amazonaws.com
+ssh -i .aws/ec2-keys/k8s-bootstrap-lab-key.pem $EC2_HOST
+```
 
 Daí, faça as coisas coisas triviais:
 
@@ -86,7 +81,7 @@ newgrp docker                        # Recarrega os grupos do usuário e aplica 
 
 3. **Instalar Kind**
 
-O Kind é `Kubernetes In Docker`
+O Kind é `Kubernetes In Docker`, ele será no nosso `Bootstrap Cluster` — nome dado ao cluster que tem a capacidade de criar outros clusters, isto é, ele serve para *fazer o bootstrap* de outros. A prática é instalar uma versão reduzida do *k8s*. O *Kind* serve a esse propósito.
 
 ```bash
 # Baixa o binário do KIND (Kubernetes in Docker) para Linux
@@ -194,15 +189,15 @@ Em um desenho mais visual ficaria assim:
 
 ```mermaid
 graph TD
-    A[Seu Desktop] -->|SSH| B[EC2 t3.micro]
+    A[Seu Desktop] -.->|estabelece conexão SSH| B[EC2 t3.micro]
 
-    B --> C[Docker Daemon]
-    C --> D[Container KIND]
-    D --> E[Kubernetes Cluster]
+    B -->|possui um processo| C[Docker Daemon]
+    C -->|está rodando um| D[Container KIND]
+    D -->|é uma imagem| E[Kubernetes Cluster]
 
-    E --> E1[Control Plane]
-    E --> E2[etcd]
-    E --> E3[Nodes Virtuais]
+    E -->|decide em| E1[Control Plane]
+    E -->|persiste/consulta em| E2[etcd]
+    E -->|delega workload| E3[Nodes Virtuais]
 ```
 
 
@@ -228,7 +223,7 @@ graph TD
 ```
 
 
-O que precisamos fazer agora é instalar o `clusterctl`. Ele é só um CLI que irá trocar uma ideia com o k8s dentro do container e pedir para instalar os CRD's do CAPI.
+Para ter o CAPI, o caminho mais fácil é instalar o `clusterctl`. Ele é só um CLI que irá trocar uma ideia com o k8s dentro do container e pedir para instalar o CAPI.
 
 ```bash
 # Baixa o binário do clusterctl (CLI do Cluster API) direto do GitHub
@@ -242,11 +237,10 @@ chmod +x clusterctl
 sudo mv clusterctl /usr/local/bin/
 ```
 
-> 🔎 **NOTA** : `kubectl` é o cliente genérico do Kubernetes. Fala com o API Server. Cria, lê e altera recursos Kubernetes. Inclui CRDs do CAPI, mas não sabe inicializar nada. Já o `clusterctl` é o cliente específico do Cluster API, ele instala os CRDs do CAPI, instala providers (que é uma coisa que ainda não discutimos) e validar versões e compatibilidade... É tipo um instalador, depois que usar ele pode voltar a usar kubectl.
+> 🔎 **NOTA** : `kubectl` é o cliente genérico do Kubernetes, operado em CLI. Fala com o API Server. Cria, lê e altera recursos Kubernetes. Inclui CRDs do CAPI, mas não sabe inicializar nada. Já o `clusterctl` é o cliente específico do Cluster API, operado em CLI. Ele instala os CRDs do CAPI, instala providers (que é uma coisa que ainda não discutimos) e valida versões e compatibilidade. É tipo um instalador, depois que usar ele pode voltar a usar kubectl.
 
 > ⭐ **CONCEITO IMPORTANTE**:
-Ao adicionar CRDs e controllers ao Kubernetes, você amplia o escopo do que ele consegue gerenciar. 
-O Kubernetes deixa de orquestrar apenas aplicações (pods, services, deployments) e passa a atuar como um plano de controle capaz de declarar, criar e manter recursos de cloud utilizados por essas aplicações.
+Ao adicionar CRDs e controllers ao Kubernetes, você amplia o escopo do que ele consegue gerenciar. O Kubernetes deixa de orquestrar apenas aplicações (pods, services, deployments) e passa a atuar como um plano de controle capaz de declarar, criar e manter recursos **de cloud** utilizados por essas aplicações.
 
 
 Mas antes, os controllers do Cluster API com provider AWS (CAPA) vão rodar dentro da EC2 e precisam criar recursos na AWS. Para isso, eles precisam de credenciais válidas da AWS. Como você sabe, essas credenciais existem no seu desktop e não existem no EC2. Logo, você precisa colocar lá.
@@ -287,9 +281,9 @@ kubectl get pods -A
 kubectl get crds | grep cluster
 ```
 
-Com isso, você instalou uma cama extra em cima do CAPI. Você instalou o CAPA, que dá ao CAPI o poder de criar recursos na AWS. Com isso você pode criar uma outra instância inteira e instalar Kubernetes nela, por exemplo. Pode também subir serviços no ECS e trata-los como pods.
+Com isso, você instalou uma cama extra em cima do CAPI. Você instalou o CAPA, que dá ao CAPI o poder de criar recursos na AWS. Eu penso que agora precisamos discutir com muita clareza o **que você consegue fazer**, o poder que isso te deu.
 
-Na prática, seu EC2 agora é oficialmente um “orquestrador de clusters Kubernetes”.
+Na prática, seu EC2 agora é oficialmente um “orquestrador de clusters Kubernetes e infraestrutura cloud” e nosso desenho mental ficou maior:
 
 
 ```mermaid
