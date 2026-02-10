@@ -242,7 +242,6 @@ sudo mv clusterctl /usr/local/bin/
 > ⭐ **CONCEITO IMPORTANTE**:
 Ao adicionar CRDs e controllers ao Kubernetes, você amplia o escopo do que ele consegue gerenciar. O Kubernetes deixa de orquestrar apenas aplicações (pods, services, deployments) e passa a atuar como um plano de controle capaz de declarar, criar e manter recursos **de cloud** utilizados por essas aplicações.
 
-
 Mas antes, os controllers do Cluster API com provider AWS (CAPA) vão rodar dentro da EC2 e precisam criar recursos na AWS. Para isso, eles precisam de credenciais válidas da AWS. Como você sabe, essas credenciais existem no seu desktop e não existem no EC2. Logo, você precisa colocar lá.
 
 Então, volte na raiz do nosso projeto e dê os seguintes comandos:
@@ -281,8 +280,6 @@ kubectl get pods -A
 kubectl get crds | grep cluster
 ```
 
-Com isso, você instalou uma cama extra em cima do CAPI. Você instalou o CAPA, que dá ao CAPI o poder de criar recursos na AWS. Eu penso que agora precisamos discutir com muita clareza o **que você consegue fazer**, o poder que isso te deu.
-
 Na prática, seu EC2 agora é oficialmente um “orquestrador de clusters Kubernetes e infraestrutura cloud” e nosso desenho mental ficou maior:
 
 
@@ -307,8 +304,49 @@ graph TD
     G --> G2[Controllers AWS EC2 ELB]
 ```
 
-## 5 — Crie seu primeiro Workload
+## 5 - Pausa do café: Uma conversa sobre a Infra que você criou.
 
+Com isso, você instalou uma cama extra em cima do CAPI (*Cluster API*), você instalou o CAPA (*Cluster API Provider AWS*), que dá ao CAPI o poder de criar recursos na AWS. Existem várias 'entidades' nesse universo, vários nomes que as vezes a gente não entender bem o que são. Aqui vai um desenho para te ajudar.
+
+```mermaid
+flowchart TD
+    A[Kubernetes Core] --> B[Controller Pattern]
+    A --> C[Custom Resource Definition - CRD]
+
+    B --> D[Controller]
+    C --> E[Custom Resource]
+
+    D -->|reconcilia| E
+
+    A --> F[API Server]
+    F --> E
+
+    subgraph Cluster API Project
+        G[Cluster API - CAPI]
+        G --> H[CRDs do CAPI<br/>Cluster, Machine, MachineSet]
+        G --> I[Controllers do CAPI]
+    end
+
+    H -->|definem| E
+    I -->|implementam| D
+
+    subgraph Infrastructure Provider
+        J[Provider AWS - CAPA]
+        J --> K[CRDs AWS<br/>AWSCluster, AWSMachine]
+        J --> L[Controllers AWS]
+    end
+
+    K --> E
+    L --> D
+```
+
+Eu penso que agora precisamos discutir com muita clareza o **que você consegue fazer**, o poder que isso te deu.
+
+
+## 6 — Criar o Workload Cluster via CAPI
+
+Definir variáveis do provider AWS
+Essas variáveis são consumidas pelo clusterctl e pelos controllers do CAPA.
 ```bash
 export AWS_REGION="us-east-1"
 export AWS_SSH_KEY_NAME="k8s-bootstrap-lab-key"
@@ -316,13 +354,15 @@ export AWS_CONTROL_PLANE_MACHINE_TYPE="t3.medium"
 export AWS_NODE_MACHINE_TYPE="t3.medium"
 ```
 
+Declarar o cluster (infraestrutura desejada)
 Para o apply dos manifests dentro do cluster de gerenciamento.
-
+Aqui você declara estado, não cria recursos manualmente.
 ```bash
 clusterctl generate cluster meu-cluster --kubernetes-version v1.28.5 | kubectl apply -f -
 ```
 
-
+Acompanhar a reconciliação do cluster
+Esses comandos mostram o CAPI materializando a infraestrutura na AWS.
 Quer ver se ele já começou? Roda:
 
 ```bash
@@ -331,3 +371,9 @@ kubectl get awsclusters
 kubectl get machines
 kubectl get awsmachines
 ```
+
+## 7 — Acessar o Workload Cluster
+
+## 8 — Validar o Kubernetes do Workload Cluster
+
+## 9 — Provisionar Workload Canônico
